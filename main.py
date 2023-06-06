@@ -1,4 +1,5 @@
 import copy
+import time
 
 
 # Carrega em uma matriz a placa em L
@@ -22,6 +23,7 @@ def carrega_placa():
         for line in f:
             placa.append([float(x) if x != 'x' else None for x in line.split()])
     return placa
+
 
 
 
@@ -84,47 +86,35 @@ def sistemaLinear(placaOriginal):
                 
                 # Adiciona a equação na placa
                 placa[i][j] = 'T'+str(i)+str(j)
-    # Cria uma lista com todas as equações (i.e sistema linear)
-    # sistema = []
-    # for i in range(len(placa)):
-    #     for j in range(len(placa[i])):
-    #         if type(placa[i][j]) is list:
-    #             sistema.append(placa[i][j])
-    return placa, equacoes
+                
+    return equacoes
 
     
     
     
 def jacobi(equacoes):
-    print('Jacobi')
+    print('Aplicando Jacobi...')
     
+    
+    tempoInicial = time.time()
     
     equacoesdict = {}
     for i in range(len(equacoes)):
-        equacoesdict[equacoes[i][0]] = equacoes[i][1:]
-    print('Equacoes DICT: ', equacoesdict)
-    
+        equacoesdict[equacoes[i][0]] = equacoes[i][1:]    
     equacoesbasedict = copy.deepcopy(equacoesdict)
-    
-    # print('Equacoes Base DICT: ', equacoesbasedict)
-        
+
     
     
     # Cria uma lista com os valores atuais de cada ponto
     valoresAtuais = {}
     for i in range(len(equacoes)):
-        valoresAtuais[equacoes[i][0]] = 0
-    print('Valores Atuais: ', valoresAtuais)
+        valoresAtuais[equacoes[i][0]] = 0        
         
-        
-        
+
     # Cria uma lista com os valores anteriores de cada ponto
     valoresAnteriores = {}
     for i in range(len(equacoes)):
-        valoresAnteriores[equacoes[i][0]] = 0
-    print('Valores Anteriores: ', valoresAnteriores)
-        
-        
+        valoresAnteriores[equacoes[i][0]] = 0        
         
         
         
@@ -137,12 +127,10 @@ def jacobi(equacoes):
         valoresAnteriores = copy.deepcopy(valoresAtuais)
         
         for i in equacoesdict.keys():
-            # print("i atual: ", i)
-            
+
             # Substitui as vaiáveis pelos valores atuais
             for j in range(len(equacoesdict[i])):
-                # print("j atual: ", j)
-                # print("Equacoesdict[i][j]: ", equacoesdict[i][j])
+
                 
                 if equacoesbasedict[i][j] == '/4': # Se for a divisão por 4,
                     continue
@@ -157,14 +145,25 @@ def jacobi(equacoes):
         erro = calcula_erro(valoresAtuais, valoresAnteriores)
         
         if erro < precisao:
-            print('Iterações: ', iteracoes)
-            print('Valores Atuais: ', valoresAtuais)
-            print('Valores Anteriores: ', valoresAnteriores)
-            print('Precisão: ', precisao)
-            print('Erro: ', erro)
             break
         else:
             continue
+    
+    #Fim contador
+    tempoFinal = time.time()
+    
+    print("     + Resultados Jacobi + \n")
+    print(' - Tempo de execução: (ms) ', (tempoFinal - tempoInicial)*1000)
+    print(' - Tempo de execução: (s)', tempoFinal - tempoInicial, ' segundos')
+    print(' - Tempo de execução: (min)', (tempoFinal - tempoInicial)/60, ' minutos')
+    print(' - Iterações: ', iteracoes)
+    print(' - Valores finais: ', valoresAtuais)
+    
+    
+    
+
+
+    
     
     
 
@@ -179,8 +178,103 @@ def calcula_erro(valoresAtuais : dict, valoresAnteriores : dict):
     
 
 
-def gauss_seidel(sistemaLinear):
+def gauss_seidel(equacoes):
     print('Gauss-Seidel')
+    
+    tempoInicial = time.time()
+    
+    equacoesdict = {}
+    for i in range(len(equacoes)):
+        equacoesdict[equacoes[i][0]] = equacoes[i][1:]
+    
+    equacoesbasedict = copy.deepcopy(equacoesdict)
+    
+        
+    
+    
+    # Cria uma lista com os valores atuais de cada ponto
+    valoresAtuais = {}
+    for i in range(len(equacoes)):
+        valoresAtuais[equacoes[i][0]] = 0
+        
+        
+        
+    # Cria uma lista com os valores anteriores de cada ponto
+    valoresAnteriores = {}
+    for i in range(len(equacoes)):
+        valoresAnteriores[equacoes[i][0]] = 0
+    
+    
+    
+        
+        
+        
+    valoresEncontrados = {}
+    for i in range(len(equacoes)):
+        valoresEncontrados[equacoes[i][0]] = 0
+        
+        
+    iteracoes = 0
+    
+    while True:
+        
+        iteracoes += 1
+        valoresAnteriores = copy.deepcopy(valoresEncontrados)
+        # limpa a lista de valores encontrados
+        for i in valoresEncontrados.keys():
+            valoresEncontrados[i] = 0
+
+        
+        
+        
+        for i in equacoesdict.keys():
+            equacao = []
+        
+            # Substitui as vaiáveis pelos valores atuais
+            for j in range(len(equacoesdict[i])):
+
+                
+                if equacoesbasedict[i][j] == '/4': # Se for a divisão por 4,
+                    continue
+                
+                
+                 # Se for uma variável e não estiver na lista de valores encontrados
+                if type(equacoesbasedict[i][j]) is str and valoresEncontrados[equacoesbasedict[i][j]] == 0:
+                    equacao.append(valoresAnteriores[equacoesbasedict[i][j]])
+                
+                
+                 # Se for uma variável e estiver na lista de valores encontrados
+                elif type(equacoesbasedict[i][j]) is str and valoresEncontrados[equacoesbasedict[i][j]] != 0:
+                    equacao.append(valoresEncontrados[equacoesbasedict[i][j]])
+                    
+                elif type(equacoesbasedict[i][j]) is int or type(equacoesbasedict[i][j]) is float:
+                    equacao.append(equacoesbasedict[i][j])
+                    
+            valoresEncontrados[i] = sum(equacao)/4
+
+                    
+        
+        
+
+        erro = calcula_erro(valoresEncontrados, valoresAnteriores)
+        
+        if erro < precisao:
+            break
+        else:
+            continue
+    
+    #Fim contador
+    tempoFinal = time.time()
+    
+    print("     + Resultados Gauss-Seidel + \n")
+    print(' - Tempo de execução: (ms) ', (tempoFinal - tempoInicial)*1000)
+    print(' - Tempo de execução: (s)', tempoFinal - tempoInicial, ' segundos')
+    print(' - Tempo de execução: (min)', (tempoFinal - tempoInicial)/60, ' minutos')
+    print(' - Iterações: ', iteracoes)
+    print(' - Valores finais: ', valoresEncontrados)
+    
+    
+
 
 
 
@@ -193,25 +287,23 @@ def main():
     # precisao = 10**(-6)
     
     # Pede para o usuário definir qual método quer usar, sendo 1 para Jacobi e 2 para Gauss-Seidel
-    metodo = int(input('Digite 1 para Jacobi ou 2 para Gauss-Seidel: '))
+    metodo = int(input('+ Opções:\n 1 - Jacobi\n 2 - Gauss-Seidel\n 3 - Ambos\n\n Escolha uma opção:'))
     
-    placaNova, equacoes = sistemaLinear(placa)
-    for i in equacoes:
-        print(i)
-        
+    equacoes = sistemaLinear(placa)
+      
         
     # Escrevendo de forma clara as equacoes em um arquivo
     with open('sistema.txt', 'w') as f:
         for i in equacoes:
             f.write(str(i[0]) + ' = ' + '(' + str(i[1]) + ' + ' + str(i[2]) + ' + ' + str(i[3]) + ' + ' + str(i[4]) + ')' + str(i[5]) + '\n')
             
-            
         
-    
-    
     if metodo == 1:
         jacobi(equacoes)
     elif metodo == 2:
+        gauss_seidel(equacoes)
+    elif metodo == 3:
+        jacobi(equacoes)
         gauss_seidel(equacoes)
     else:
         print('Método inválido')
