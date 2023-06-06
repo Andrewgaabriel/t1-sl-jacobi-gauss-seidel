@@ -1,5 +1,9 @@
 import copy
 import time
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+from scipy.interpolate import griddata
 
 
 # Carrega em uma matriz a placa em L
@@ -87,7 +91,7 @@ def sistemaLinear(placaOriginal):
                 # Adiciona a equação na placa
                 placa[i][j] = 'T'+str(i)+str(j)
                 
-    return equacoes
+    return equacoes, placa
 
     
     
@@ -158,6 +162,8 @@ def jacobi(equacoes):
     print(' - Tempo de execução: (min)', (tempoFinal - tempoInicial)/60, ' minutos')
     print(' - Iterações: ', iteracoes)
     print(' - Valores finais: ', valoresAtuais)
+    
+    return valoresAtuais
     
     
     
@@ -272,6 +278,9 @@ def gauss_seidel(equacoes):
     print(' - Tempo de execução: (min)', (tempoFinal - tempoInicial)/60, ' minutos')
     print(' - Iterações: ', iteracoes)
     print(' - Valores finais: ', valoresEncontrados)
+
+    return valoresEncontrados
+    
     
     
 
@@ -289,7 +298,7 @@ def main():
     # Pede para o usuário definir qual método quer usar, sendo 1 para Jacobi e 2 para Gauss-Seidel
     metodo = int(input('+ Opções:\n 1 - Jacobi\n 2 - Gauss-Seidel\n 3 - Ambos\n\n Escolha uma opção:'))
     
-    equacoes = sistemaLinear(placa)
+    equacoes,placanova = sistemaLinear(placa)
       
         
     # Escrevendo de forma clara as equacoes em um arquivo
@@ -299,15 +308,111 @@ def main():
             
         
     if metodo == 1:
-        jacobi(equacoes)
+        jacobiresultados = jacobi(equacoes)
     elif metodo == 2:
-        gauss_seidel(equacoes)
+        gaussresultados = gauss_seidel(equacoes)
     elif metodo == 3:
-        jacobi(equacoes)
-        gauss_seidel(equacoes)
+        jacobiresultados = jacobi(equacoes)
+        gaussresultados = gauss_seidel(equacoes)
     else:
         print('Método inválido')
         return
+    
+    
+    
+    
+    
+    
+    
+    # Criar matriz de temperaturas substituindo os valores encontrados na placanova
+    
+    
+    for i in range(len(placanova)):
+        for j in range(len(placanova[i])):
+            if type(placanova[i][j]) is str and placanova[i][j] in list(jacobiresultados.keys()):
+                placanova[i][j] = round(jacobiresultados[placanova[i][j]], 4)
+    
+
+    for i in placanova:
+        print(i)
+        
+        
+    #GRAFICOS GERADOS A PARTIR DO JACOBI PARA SUBSTITUIR POR GAUSS SEIDEL BASTA TROCAR OS VALORES DE JACOBIRESULTADOS POR GAUSSRESULTADOS
+        
+        
+        
+    ## DESCOMENTAR PARA PLOTAR O GRÁFICO DE MAPA DE CALOR
+    
+    # T = np.array(placanova)
+
+    # # Criar o gráfico de mapa de calor
+    # fig, ax = plt.subplots()
+    # im = ax.imshow(T, cmap='hot')
+
+    # # Adicionar as barras de cores
+    # cbar = ax.figure.colorbar(im, ax=ax)
+
+    # # Adicionar rótulos dos eixos
+    # ax.set_xticks(np.arange(len(placanova[0])))
+    # ax.set_yticks(np.arange(len(placanova)))
+    # ax.set_xticklabels(np.arange(1, len(placanova[0])+1))
+    # ax.set_yticklabels(np.arange(1, len(placanova)+1))
+
+    # # Rotacionar os rótulos dos eixos x
+    # plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    # # Adicionar valores dos pontos no mapa de calor
+    # for i in range(len(placanova)):
+    #     for j in range(len(placanova[0])):
+    #         text = ax.text(j, i, T[i, j], ha="center", va="center", color="w")
+
+    # # Adicionar título
+    # ax.set_title("Mapa de Calor de Temperaturas")
+
+    # # Mostrar o gráfico
+    # plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ## DESCOMENTAR PARA PLOTAR O GRÁFICO DE SUPERFÍCIE
+
+    
+    # x = np.arange(len(placanova))
+    # y = np.arange(len(placanova[0]))
+
+    # # Criar uma grade de coordenadas
+    # X, Y = np.meshgrid(x, y)
+
+    # # Converter a matriz de placanova em um array numpy
+    # T = np.array(placanova)
+
+    # # Criar o gráfico de superfície
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X, Y, T, cmap='viridis')
+
+    # # Adicionar rótulos e título
+    # ax.set_xlabel('x')
+    # ax.set_ylabel('y')
+    # ax.set_zlabel('Temperatura')
+    # ax.set_title('Campo Resultante de Temperaturas')
+    
+    # for i in range(len(x)):
+    #     for j in range(len(y)):
+    #         ax.text(x[i], y[j], T[j, i], f'{T[j, i]}', color='red')
+
+    # # Mostrar o gráfico
+    # plt.show()
+
+    
+    
     
     
 if __name__ == '__main__':
